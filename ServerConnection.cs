@@ -60,16 +60,18 @@ namespace HomeAssistantShortcuts
                     value.Append('/');
                 }
 
-                client = new HttpClient();
-                client.BaseAddress = new Uri(value);
-                client.Timeout = TimeSpan.FromSeconds(10);
+                client = new HttpClient
+                {
+                    BaseAddress = new Uri(value),
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
             }
             get => client?.BaseAddress.ToString();
         }
 
         public string Token { set; private get; }
 
-        private async Task<T> api<T>(HttpMethod method, string path, object body = null) 
+        private async Task<T> api<T>(HttpMethod method, string path, object body = null)
         {
             using var message = new HttpRequestMessage(method, path);
             message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Token);
@@ -78,9 +80,9 @@ namespace HomeAssistantShortcuts
             using var bodyStream = new MemoryStream();
             if (!(body is null))
             {
-                if (body is string)
+                if (body is string @stringBody)
                 {
-                    var bytes = Encoding.UTF8.GetBytes((string)body);
+                    var bytes = Encoding.UTF8.GetBytes(stringBody);
                     await bodyStream.WriteAsync(bytes, 0, bytes.Length);
                 }
                 else
@@ -111,7 +113,8 @@ namespace HomeAssistantShortcuts
                 from item in response
                 from service in item.services
                 orderby item.domain, service.Key
-                select new Service() {
+                select new Service()
+                {
                     Path = $"{item.domain}/{service.Key}",
                     Description = service.Value.description,
                 }

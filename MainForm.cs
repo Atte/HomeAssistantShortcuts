@@ -16,16 +16,25 @@ namespace HomeAssistantShortcuts
         public MainForm()
         {
             InitializeComponent();
+#if DEBUG
+            notifyIcon.Text += " (DEBUG)";
+            notifyIcon.Visible = false;
+#endif
             applySettings();
         }
 
         protected override void SetVisibleCore(bool value)
         {
+#if DEBUG
+            // prevent warnings about unused variable
+            _ = initialShow;
+#else
             if (initialShow)
             {
                 value = false;
                 if (!IsHandleCreated) CreateHandle();
             }
+#endif
             base.SetVisibleCore(value);
         }
 
@@ -109,20 +118,16 @@ namespace HomeAssistantShortcuts
 
         private void buttonDeleteShortcuts_Click(object sender, EventArgs e)
         {
-            foreach (
-                var shortcut in
-                from ListViewItem item
-                in listShortcuts.SelectedItems
+            Properties.Settings.Default.Shortcuts.RemoveAll(shortcut => (
+                from ListViewItem item in listShortcuts.SelectedItems
                 select item.Tag as Shortcut
-            )
-            {
-                Properties.Settings.Default.Shortcuts.Remove(shortcut);
-            }
+            ).Contains(shortcut));
+            listShortcuts.SelectedItems.Clear();
             Properties.Settings.Default.Save();
             applySettings();
         }
 
-        private void listShortcuts_SelectedIndexChanged(object sender, EventArgs e)
+        private void listShortcuts_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             buttonDeleteShortcuts.Enabled = listShortcuts.SelectedItems.Count > 0;
         }

@@ -6,8 +6,8 @@ namespace HomeAssistantShortcuts
 {
     public partial class AddDialogForm : Form
     {
-        private ServerConnection connection;
-        private Shortcut shortcut;
+        private readonly ServerConnection connection;
+        private readonly Shortcut shortcut;
 
         public AddDialogForm(ServerConnection connection, Shortcut shortcut = null)
         {

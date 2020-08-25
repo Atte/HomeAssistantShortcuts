@@ -36,7 +36,9 @@ namespace HomeAssistantShortcuts
                 if (KeyCode is null)
                 {
                     parts.Add("...");
-                } else { 
+                } else if (KeyCode >= Keys.D0 && KeyCode <= Keys.D9) {
+                    parts.Add(KeyCode.ToString().Substring(1));
+                } else {
                     parts.Add(KeyCode.ToString());
                 }
                 return string.Join(" + ", parts);
