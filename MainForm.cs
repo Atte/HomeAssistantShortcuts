@@ -53,14 +53,7 @@ namespace HomeAssistantShortcuts
             }
 
             // clear old hotkeys
-            foreach (var hotkey in hotkeys)
-            {
-                if (hotkey.Registered)
-                {
-                    hotkey.Unregister();
-                }
-            }
-            hotkeys.Clear();
+            deregisterHotkeys();
 
             // add shortcuts to list and register handlers
             listShortcuts.BeginUpdate();
@@ -80,10 +73,23 @@ namespace HomeAssistantShortcuts
                     var hotkey = new Hotkey((Keys)shortcut.KeyCode, shortcut.Shift, shortcut.Control, shortcut.Alt, false);
                     hotkey.Pressed += async delegate { await connection.CallService(shortcut.Path, shortcut.Payload); };
                     hotkey.Register(this);
+                    hotkeys.Add(hotkey);
                 }
             }
             listShortcuts.EndUpdate();
             listShortcuts.Update();
+        }
+
+        private void deregisterHotkeys()
+        {
+            foreach (var hotkey in hotkeys)
+            {
+                if (hotkey.Registered)
+                {
+                    hotkey.Unregister();
+                }
+            }
+            hotkeys.Clear();
         }
 
         private void buttonSaveServerConnection_Click(object sender, EventArgs e)
@@ -112,16 +118,17 @@ namespace HomeAssistantShortcuts
         private void buttonAddShortcut_Click(object sender, EventArgs e)
         {
             var dialog = new AddDialogForm(connection);
+            dialog.Shown += delegate { deregisterHotkeys(); };
             dialog.FormClosed += delegate { applySettings(); };
             dialog.ShowDialog();
         }
 
         private void buttonDeleteShortcuts_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Shortcuts.RemoveAll(shortcut => (
-                from ListViewItem item in listShortcuts.SelectedItems
-                select item.Tag as Shortcut
-            ).Contains(shortcut));
+
+            Properties.Settings.Default.Shortcuts.RemoveAll(
+                shortcut => listShortcuts.SelectedItems.Cast<ListViewItem>().Any(item => item.Tag == shortcut)
+            );
             listShortcuts.SelectedItems.Clear();
             Properties.Settings.Default.Save();
             applySettings();
