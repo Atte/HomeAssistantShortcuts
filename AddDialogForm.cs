@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,12 +7,14 @@ namespace HomeAssistantShortcuts
     public partial class AddDialogForm : Form
     {
         private ServerConnection connection;
-        private KeyEventArgs shortcut;
+        private Shortcut shortcut;
 
-        public AddDialogForm(ServerConnection connection)
+        public AddDialogForm(ServerConnection connection, Shortcut shortcut = null)
         {
             InitializeComponent();
             this.connection = connection;
+            this.shortcut = shortcut ?? new Shortcut();
+            syncButtonStatuses();
         }
 
         public async Task LoadServices()
@@ -26,10 +22,23 @@ namespace HomeAssistantShortcuts
             var services = await connection.ListServices();
             comboBoxPaths.Items.AddRange(services.ToArray());
             comboBoxPaths.Enabled = true;
+
+            if (shortcut.Path != "")
+            {
+                comboBoxPaths.SelectedValue = shortcut.Path;
+            }
+            syncButtonStatuses();
+        }
+
+        private void syncButtonStatuses()
+        {
+            buttonAdd.Enabled = shortcut.KeyCode > 0 && shortcut.Path != "";
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
+            Properties.Settings.Default.Shortcuts.Add(shortcut);
+            Properties.Settings.Default.Save();
             Close();
         }
 
@@ -45,52 +54,38 @@ namespace HomeAssistantShortcuts
 
         private void textBoxShortcut_KeyDown(object sender, KeyEventArgs e)
         {
-            shortcut = e;
             e.Handled = true;
             e.SuppressKeyPress = true;
+
+            shortcut.SetFromEvent(e);
             renderShortcut();
+            syncButtonStatuses();
         }
 
         private void renderShortcut()
         {
-            if (shortcut == null)
+            var label = shortcut?.KeyLabel;
+            if (label is null || label == "")
             {
                 textBoxShortcut.Text = "<not set>";
-                return;
             }
+            else
+            {
+                textBoxShortcut.Text = label;
+            }
+        }
 
-            var parts = new List<string>();
-            if (shortcut.Control)
-            {
-                parts.Add("Ctrl");
-            }
-            if (shortcut.Alt)
-            {
-                parts.Add("Alt");
-            }
-            if (shortcut.Shift)
-            {
-                parts.Add("Shift");
-            }
-            switch (shortcut.KeyCode)
-            {
-                case Keys.ControlKey:
-                case Keys.LControlKey:
-                case Keys.RControlKey:
-                case Keys.Alt:
-                case Keys.Menu:
-                case Keys.LMenu:
-                case Keys.RMenu:
-                case Keys.ShiftKey:
-                case Keys.LShiftKey:
-                case Keys.RShiftKey:
-                    parts.Add("...");
-                    break;
-                default:
-                    parts.Add(shortcut.KeyCode.ToString());
-                    break;
-            }
-            textBoxShortcut.Text = String.Join(" + ", parts);
+        private void textBoxPayload_TextChanged(object sender, EventArgs e)
+        {
+            shortcut.Payload = textBoxPayload.Text;
+            syncButtonStatuses();
+        }
+
+        private void comboBoxPaths_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selected = (Service)comboBoxPaths.SelectedItem;
+            shortcut.Path = selected?.Path;
+            syncButtonStatuses();
         }
     }
 }

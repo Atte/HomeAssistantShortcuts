@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -35,6 +38,7 @@ namespace HomeAssistantShortcuts
     public class Service
     {
         public string Path { get; set; }
+        public string Name { get; set; }
         public string Description { get; set; }
     }
 
@@ -72,11 +76,19 @@ namespace HomeAssistantShortcuts
             message.Headers.Add("Accept", "application/json");
 
             using var bodyStream = new MemoryStream();
-            if (body != null)
+            if (!(body is null))
             {
-                await JsonSerializer.SerializeAsync(bodyStream, body);
+                if (body is string)
+                {
+                    var bytes = Encoding.UTF8.GetBytes((string)body);
+                    await bodyStream.WriteAsync(bytes, 0, bytes.Length);
+                }
+                else
+                {
+                    await JsonSerializer.SerializeAsync(bodyStream, body);
+                }
                 message.Content = new StreamContent(bodyStream);
-                message.Headers.Add("Content-Type", "application/json");
+                message.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
 
             using var response = await client.SendAsync(message);
@@ -104,6 +116,11 @@ namespace HomeAssistantShortcuts
                     Description = service.Value.description,
                 }
             ).ToList();
+        }
+
+        public async Task<List<object>> CallService(string path, string payload = "")
+        {
+            return await api<List<object>>(HttpMethod.Post, $"services/{path}", payload);
         }
     }
 }

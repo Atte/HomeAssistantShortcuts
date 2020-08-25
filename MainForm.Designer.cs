@@ -33,24 +33,23 @@
             System.Windows.Forms.Label labelServerStatus;
             System.Windows.Forms.Label labelApiAccessToken;
             System.Windows.Forms.Label labelApiBaseUrl;
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            System.Windows.Forms.ColumnHeader columnKey;
+            System.Windows.Forms.ColumnHeader columnKeyLabel;
             System.Windows.Forms.ColumnHeader columnPath;
             System.Windows.Forms.ColumnHeader columnPayload;
-            HomeAssistantShortcuts.Properties.Settings settings = new HomeAssistantShortcuts.Properties.Settings();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.buttonSaveServerConnection = new System.Windows.Forms.Button();
             this.textBoxServerStatus = new System.Windows.Forms.TextBox();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.listShortcuts = new System.Windows.Forms.ListView();
-            this.textBoxApiAccessToken = new System.Windows.Forms.TextBox();
-            this.textBoxApiBaseUrl = new System.Windows.Forms.TextBox();
             this.buttonDeleteShortcuts = new System.Windows.Forms.Button();
             this.buttonAddShortcut = new System.Windows.Forms.Button();
+            this.textBoxApiAccessToken = new System.Windows.Forms.TextBox();
+            this.textBoxApiBaseUrl = new System.Windows.Forms.TextBox();
             groupBoxServerConnection = new System.Windows.Forms.GroupBox();
             labelServerStatus = new System.Windows.Forms.Label();
             labelApiAccessToken = new System.Windows.Forms.Label();
             labelApiBaseUrl = new System.Windows.Forms.Label();
-            columnKey = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            columnKeyLabel = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             columnPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             columnPayload = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             groupBoxServerConnection.SuspendLayout();
@@ -122,10 +121,26 @@
             labelApiBaseUrl.TabIndex = 0;
             labelApiBaseUrl.Text = "API base URL:";
             // 
+            // columnKeyLabel
+            // 
+            columnKeyLabel.Text = "Shortcut";
+            columnKeyLabel.Width = 120;
+            // 
+            // columnPath
+            // 
+            columnPath.Text = "Service";
+            columnPath.Width = 200;
+            // 
+            // columnPayload
+            // 
+            columnPayload.Text = "Payload";
+            columnPayload.Width = 500;
+            // 
             // notifyIcon
             // 
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "HomeAssistant Shortcuts";
+            this.notifyIcon.Visible = true;
             this.notifyIcon.DoubleClick += new System.EventHandler(this.notifyIcon_DoubleClick);
             // 
             // listShortcuts
@@ -134,7 +149,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.listShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            columnKey,
+            columnKeyLabel,
             columnPath,
             columnPayload});
             this.listShortcuts.FullRowSelect = true;
@@ -145,48 +160,13 @@
             this.listShortcuts.Size = new System.Drawing.Size(580, 309);
             this.listShortcuts.TabIndex = 1;
             this.listShortcuts.UseCompatibleStateImageBehavior = false;
-            // 
-            // columnKey
-            // 
-            columnKey.Text = "Key";
-            columnKey.Width = -2;
-            // 
-            // columnPath
-            // 
-            columnPath.Text = "Service";
-            columnPath.Width = -2;
-            // 
-            // columnPayload
-            // 
-            columnPayload.Text = "Payload";
-            columnPayload.Width = -2;
-            // 
-            // textBoxApiAccessToken
-            // 
-            this.textBoxApiAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxApiAccessToken.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings, "ApiAccessToken", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBoxApiAccessToken.Location = new System.Drawing.Point(91, 46);
-            this.textBoxApiAccessToken.Name = "textBoxApiAccessToken";
-            this.textBoxApiAccessToken.Size = new System.Drawing.Size(483, 20);
-            this.textBoxApiAccessToken.TabIndex = 2;
-            this.textBoxApiAccessToken.Text = settings.ApiAccessToken;
-            this.textBoxApiAccessToken.UseSystemPasswordChar = true;
-            // 
-            // textBoxApiBaseUrl
-            // 
-            this.textBoxApiBaseUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxApiBaseUrl.DataBindings.Add(new System.Windows.Forms.Binding("Text", settings, "ApiBaseUrl", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.textBoxApiBaseUrl.Location = new System.Drawing.Point(91, 19);
-            this.textBoxApiBaseUrl.Name = "textBoxApiBaseUrl";
-            this.textBoxApiBaseUrl.Size = new System.Drawing.Size(483, 20);
-            this.textBoxApiBaseUrl.TabIndex = 1;
-            this.textBoxApiBaseUrl.Text = settings.ApiBaseUrl;
+            this.listShortcuts.View = System.Windows.Forms.View.Details;
+            this.listShortcuts.SelectedIndexChanged += new System.EventHandler(this.listShortcuts_SelectedIndexChanged);
             // 
             // buttonDeleteShortcuts
             // 
             this.buttonDeleteShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonDeleteShortcuts.Enabled = false;
             this.buttonDeleteShortcuts.Location = new System.Drawing.Point(13, 433);
             this.buttonDeleteShortcuts.Name = "buttonDeleteShortcuts";
             this.buttonDeleteShortcuts.Size = new System.Drawing.Size(125, 23);
@@ -205,6 +185,29 @@
             this.buttonAddShortcut.Text = "Add";
             this.buttonAddShortcut.UseVisualStyleBackColor = true;
             this.buttonAddShortcut.Click += new System.EventHandler(this.buttonAddShortcut_Click);
+            // 
+            // textBoxApiAccessToken
+            // 
+            this.textBoxApiAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxApiAccessToken.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::HomeAssistantShortcuts.Properties.Settings.Default, "ApiAccessToken", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxApiAccessToken.Location = new System.Drawing.Point(91, 46);
+            this.textBoxApiAccessToken.Name = "textBoxApiAccessToken";
+            this.textBoxApiAccessToken.Size = new System.Drawing.Size(483, 20);
+            this.textBoxApiAccessToken.TabIndex = 2;
+            this.textBoxApiAccessToken.Text = global::HomeAssistantShortcuts.Properties.Settings.Default.ApiAccessToken;
+            this.textBoxApiAccessToken.UseSystemPasswordChar = true;
+            // 
+            // textBoxApiBaseUrl
+            // 
+            this.textBoxApiBaseUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxApiBaseUrl.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::HomeAssistantShortcuts.Properties.Settings.Default, "ApiBaseUrl", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBoxApiBaseUrl.Location = new System.Drawing.Point(91, 19);
+            this.textBoxApiBaseUrl.Name = "textBoxApiBaseUrl";
+            this.textBoxApiBaseUrl.Size = new System.Drawing.Size(483, 20);
+            this.textBoxApiBaseUrl.TabIndex = 1;
+            this.textBoxApiBaseUrl.Text = global::HomeAssistantShortcuts.Properties.Settings.Default.ApiBaseUrl;
             // 
             // MainForm
             // 
