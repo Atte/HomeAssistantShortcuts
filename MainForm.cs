@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -17,12 +18,21 @@ namespace HomeAssistantShortcuts
         {
             InitializeComponent();
 #if DEBUG
-            notifyIcon.Text += " (DEBUG)";
+            // flip tray icon
+            using var bitmap = notifyIcon.Icon.ToBitmap();
+            bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
+            notifyIcon.Icon = System.Drawing.Icon.FromHandle(bitmap.GetHicon());
+
+            var debugSuffix = " (DEBUG)";
+            Text += debugSuffix;
+            toolStripMenuItemTitle.Text += debugSuffix;
+            notifyIcon.Text += debugSuffix;
             notifyIcon.Visible = false;
 #endif
             applySettings();
         }
 
+        // hide window by default in release builds
         protected override void SetVisibleCore(bool value)
         {
 #if DEBUG
@@ -68,16 +78,15 @@ namespace HomeAssistantShortcuts
                 listShortcuts.Items.Add(item);
 
                 // register handler
-                if (!(shortcut.KeyCode is null))
+                var hotkey = shortcut.ToHotkey();
+                if (!(hotkey is null) && !string.IsNullOrEmpty(shortcut.Path))
                 {
-                    var hotkey = new Hotkey((Keys)shortcut.KeyCode, shortcut.Shift, shortcut.Control, shortcut.Alt, false);
-                    hotkey.Pressed += async delegate { await connection.CallService(shortcut.Path, shortcut.Payload); };
+                    hotkey.Pressed += async delegate { await connection.CallService(shortcut.Path!, shortcut.Payload); };
                     hotkey.Register(this);
                     hotkeys.Add(hotkey);
                 }
             }
             listShortcuts.EndUpdate();
-            listShortcuts.Update();
         }
 
         private void deregisterHotkeys()
@@ -96,14 +105,6 @@ namespace HomeAssistantShortcuts
         {
             Properties.Settings.Default.Save();
             applySettings();
-        }
-
-        private void notifyIcon_DoubleClick(object sender, EventArgs e)
-        {
-            initialShow = false;
-            Show();
-            WindowState = FormWindowState.Normal;
-            notifyIcon.Visible = false;
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -137,6 +138,35 @@ namespace HomeAssistantShortcuts
         private void listShortcuts_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             buttonDeleteShortcuts.Enabled = listShortcuts.SelectedItems.Count > 0;
+        }
+
+        private void restoreFromTray()
+        {
+            initialShow = false;
+            BringToFront();
+            Show();
+            WindowState = FormWindowState.Normal;
+            notifyIcon.Visible = false;
+        }
+
+        private void notifyIcon_DoubleClick(object sender, EventArgs e)
+        {
+            restoreFromTray();
+        }
+
+        private void toolStripMenuItemOpen_Click(object sender, EventArgs e)
+        {
+            restoreFromTray();
+        }
+
+        private void toolStripMenuItemQuit_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            deregisterHotkeys();
         }
     }
 }

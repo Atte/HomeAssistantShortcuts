@@ -1,55 +1,53 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace HomeAssistantShortcuts
 {
-    class PingResponse
+    sealed class PingResponse
     {
-        public string message { get; set; }
+        public string? message { get; set; }
     }
 
-    class ServiceResponseItem
+    sealed class ServiceResponseItem
     {
-        public string domain { get; set; }
-        public Dictionary<string, ServiceResponseItemService> services { get; set; }
+        public string? domain { get; set; }
+        public Dictionary<string, ServiceResponseItemService>? services { get; set; }
     }
 
-    class ServiceResponseItemService
+    sealed class ServiceResponseItemService
     {
-        public string description { get; set; }
-        public Dictionary<string, ServiceResponseItemServiceField> fields { get; set; }
+        public string? description { get; set; }
+        public Dictionary<string, ServiceResponseItemServiceField>? fields { get; set; }
     }
 
-    class ServiceResponseItemServiceField
+    sealed class ServiceResponseItemServiceField
     {
-        public string description { get; set; }
-        // example: any
+        public string? description { get; set; }
     }
 
-    public class Service
+    public sealed class Service
     {
-        public string Path { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+        public string Path { get; private set; }
+        public string Description { get; private set; }
 
-    public class ServerConnection : IDisposable
-    {
-        private HttpClient client;
-
-        public void Dispose()
+        public Service(string path, string? description)
         {
-            client.Dispose();
+            Path = path;
+            Description = description ?? "";
         }
+    }
+
+    public sealed class ServerConnection : IDisposable
+    {
+        private HttpClient? client = null;
 
         public string BaseUrl
         {
@@ -66,21 +64,36 @@ namespace HomeAssistantShortcuts
                     Timeout = TimeSpan.FromSeconds(10)
                 };
             }
-            get => client?.BaseAddress.ToString();
         }
 
-        public string Token { set; private get; }
+        public string? Token { set; private get; }
 
-        private async Task<T> api<T>(HttpMethod method, string path, object body = null)
+        public void Dispose()
         {
+            client?.Dispose();
+            client = null;
+            GC.SuppressFinalize(this);
+        }
+
+        private async Task<T> api<T>(HttpMethod method, string path, object? body = null)
+        {
+            if (client is null)
+            {
+                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(BaseUrl)} has been set");
+            }
+            if (Token is null)
+            {
+                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(Token)} has been set");
+            }
+
             using var message = new HttpRequestMessage(method, path);
-            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Token);
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
             message.Headers.Add("Accept", "application/json");
 
             using var bodyStream = new MemoryStream();
             if (!(body is null))
             {
-                if (body is string @stringBody)
+                if (body is string stringBody)
                 {
                     var bytes = Encoding.UTF8.GetBytes(stringBody);
                     await bodyStream.WriteAsync(bytes, 0, bytes.Length);
@@ -100,7 +113,7 @@ namespace HomeAssistantShortcuts
             return await JsonSerializer.DeserializeAsync<T>(stream);
         }
 
-        public async Task<string> Ping()
+        public async Task<string?> Ping()
         {
             var response = await api<PingResponse>(HttpMethod.Get, "");
             return response.message;
@@ -113,11 +126,7 @@ namespace HomeAssistantShortcuts
                 from item in response
                 from service in item.services
                 orderby item.domain, service.Key
-                select new Service()
-                {
-                    Path = $"{item.domain}/{service.Key}",
-                    Description = service.Value.description,
-                }
+                select new Service($"{item.domain}/{service.Key}", service.Value.description)
             ).ToList();
         }
 

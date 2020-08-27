@@ -36,11 +36,15 @@
             System.Windows.Forms.ColumnHeader columnKeyLabel;
             System.Windows.Forms.ColumnHeader columnPath;
             System.Windows.Forms.ColumnHeader columnPayload;
+            System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
+            System.Windows.Forms.ToolStripMenuItem toolStripMenuItemOpen;
+            System.Windows.Forms.ToolStripMenuItem toolStripMenuItemQuit;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.buttonSaveServerConnection = new System.Windows.Forms.Button();
             this.textBoxServerStatus = new System.Windows.Forms.TextBox();
             this.textBoxApiAccessToken = new System.Windows.Forms.TextBox();
             this.textBoxApiBaseUrl = new System.Windows.Forms.TextBox();
+            this.toolStripMenuItemTitle = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.listShortcuts = new System.Windows.Forms.ListView();
             this.buttonDeleteShortcuts = new System.Windows.Forms.Button();
@@ -52,7 +56,11 @@
             columnKeyLabel = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             columnPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             columnPayload = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
+            toolStripMenuItemOpen = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripMenuItemQuit = new System.Windows.Forms.ToolStripMenuItem();
             groupBoxServerConnection.SuspendLayout();
+            contextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxServerConnection
@@ -97,6 +105,7 @@
             // 
             this.textBoxServerStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxServerStatus.Enabled = false;
             this.textBoxServerStatus.Location = new System.Drawing.Point(91, 72);
             this.textBoxServerStatus.Name = "textBoxServerStatus";
             this.textBoxServerStatus.ReadOnly = true;
@@ -159,8 +168,40 @@
             columnPayload.Text = "Payload";
             columnPayload.Width = 500;
             // 
+            // contextMenuStripNotifyIcon
+            // 
+            contextMenuStripNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemTitle,
+            toolStripMenuItemOpen,
+            toolStripMenuItemQuit});
+            contextMenuStripNotifyIcon.Name = "contextMenuStripNotifyIcon";
+            contextMenuStripNotifyIcon.ShowImageMargin = false;
+            contextMenuStripNotifyIcon.Size = new System.Drawing.Size(186, 70);
+            // 
+            // toolStripMenuItemTitle
+            // 
+            this.toolStripMenuItemTitle.Enabled = false;
+            this.toolStripMenuItemTitle.Name = "toolStripMenuItemTitle";
+            this.toolStripMenuItemTitle.Size = new System.Drawing.Size(185, 22);
+            this.toolStripMenuItemTitle.Text = "Home Assistant Shortcuts";
+            // 
+            // toolStripMenuItemOpen
+            // 
+            toolStripMenuItemOpen.Name = "toolStripMenuItemOpen";
+            toolStripMenuItemOpen.Size = new System.Drawing.Size(185, 22);
+            toolStripMenuItemOpen.Text = "Settings";
+            toolStripMenuItemOpen.Click += new System.EventHandler(this.toolStripMenuItemOpen_Click);
+            // 
+            // toolStripMenuItemQuit
+            // 
+            toolStripMenuItemQuit.Name = "toolStripMenuItemQuit";
+            toolStripMenuItemQuit.Size = new System.Drawing.Size(185, 22);
+            toolStripMenuItemQuit.Text = "Quit";
+            toolStripMenuItemQuit.Click += new System.EventHandler(this.toolStripMenuItemQuit_Click);
+            // 
             // notifyIcon
             // 
+            this.notifyIcon.ContextMenuStrip = contextMenuStripNotifyIcon;
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "HomeAssistant Shortcuts";
             this.notifyIcon.Visible = true;
@@ -220,10 +261,12 @@
             this.Controls.Add(groupBoxServerConnection);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
-            this.Text = "HomeAssistant Shortcuts";
+            this.Text = "Home Assistant Shortcuts";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             groupBoxServerConnection.ResumeLayout(false);
             groupBoxServerConnection.PerformLayout();
+            contextMenuStripNotifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -237,6 +280,7 @@
         private System.Windows.Forms.ListView listShortcuts;
         private System.Windows.Forms.Button buttonDeleteShortcuts;
         private System.Windows.Forms.Button buttonAddShortcut;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemTitle;
     }
 }
 

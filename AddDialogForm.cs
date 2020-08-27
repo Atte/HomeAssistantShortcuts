@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -9,7 +10,7 @@ namespace HomeAssistantShortcuts
         private readonly ServerConnection connection;
         private readonly Shortcut shortcut;
 
-        public AddDialogForm(ServerConnection connection, Shortcut shortcut = null)
+        public AddDialogForm(ServerConnection connection, Shortcut? shortcut = null)
         {
             InitializeComponent();
             this.connection = connection;
@@ -32,7 +33,7 @@ namespace HomeAssistantShortcuts
 
         private void syncButtonStatuses()
         {
-            buttonAdd.Enabled = shortcut.KeyCode > 0 && shortcut.Path != "";
+            buttonAdd.Enabled = shortcut.KeyCode > 0 && !string.IsNullOrEmpty(shortcut.Path);
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
@@ -65,7 +66,7 @@ namespace HomeAssistantShortcuts
         private void renderShortcut()
         {
             var label = shortcut?.KeyLabel;
-            if (label is null || label == "")
+            if (string.IsNullOrEmpty(label))
             {
                 textBoxShortcut.Text = "<not set>";
             }

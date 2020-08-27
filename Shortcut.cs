@@ -1,25 +1,24 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
 using System.Windows.Forms;
 
 namespace HomeAssistantShortcuts
 {
     [Serializable]
-    public class Shortcut
+    public sealed class Shortcut
     {
         public bool Control = false;
         public bool Alt = false;
         public bool Shift = false;
         public Keys? KeyCode = 0;
-        public string Path = "";
+        public string? Path = null;
         public string Payload = "";
 
-        public string KeyLabel {
-            get {
+        public string KeyLabel
+        {
+            get
+            {
                 var parts = new List<string>();
                 if (Control)
                 {
@@ -36,9 +35,13 @@ namespace HomeAssistantShortcuts
                 if (KeyCode is null)
                 {
                     parts.Add("...");
-                } else if (KeyCode >= Keys.D0 && KeyCode <= Keys.D9) {
+                }
+                else if (KeyCode >= Keys.D0 && KeyCode <= Keys.D9)
+                {
                     parts.Add(KeyCode.ToString().Substring(1));
-                } else {
+                }
+                else
+                {
                     parts.Add(KeyCode.ToString());
                 }
                 return string.Join(" + ", parts);
@@ -71,5 +74,7 @@ namespace HomeAssistantShortcuts
                     break;
             }
         }
+
+        public Hotkey? ToHotkey() => KeyCode is null ? null : new Hotkey(KeyCode.Value, Shift, Control, Alt, false);
     }
 }
