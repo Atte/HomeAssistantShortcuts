@@ -31,17 +31,30 @@ namespace HomeAssistantShortcuts
     sealed class ServiceResponseItemServiceField
     {
         public string? description { get; set; }
+        public JsonElement? example { get; set; }
     }
 
     public sealed class Service
     {
         public string Path { get; private set; }
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
+        public string? PayloadPlaceholder { get; private set; }
 
-        public Service(string path, string? description)
+        internal Service(string path, ServiceResponseItemService service)
         {
             Path = path;
-            Description = description ?? "";
+            Description = service.description;
+
+            if (service.fields?.Count > 0)
+            {
+                var options = new JsonSerializerOptions();
+                options.WriteIndented = true;
+
+                PayloadPlaceholder = JsonSerializer.Serialize(
+                    service.fields.ToDictionary(field => field.Key, field => field.Value.example ?? new JsonElement()),
+                    options
+                );
+            }
         }
     }
 
@@ -128,7 +141,7 @@ namespace HomeAssistantShortcuts
                 from item in response
                 from service in item.services
                 orderby item.domain, service.Key
-                select new Service($"{item.domain}/{service.Key}", service.Value.description)
+                select new Service($"{item.domain}/{service.Key}", service.Value)
             ).ToList();
         }
 

@@ -1,5 +1,7 @@
 ﻿#nullable enable
 using System;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -7,6 +9,13 @@ namespace HomeAssistantShortcuts
 {
     public partial class AddDialogForm : Form
     {
+        #region interop
+        private const int EM_SETCUEBANNER = 0x1501;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern Int32 SendMessage(IntPtr hWnd, int msg, int wParam, [MarshalAs(UnmanagedType.LPWStr)] string lParam);
+        #endregion
+
         private readonly ServerConnection connection;
         private readonly Shortcut shortcut;
 
@@ -86,6 +95,8 @@ namespace HomeAssistantShortcuts
         {
             var selected = (Service)comboBoxPaths.SelectedItem;
             shortcut.Path = selected?.Path;
+            textBoxPayload.PlaceholderText = "";
+            SendMessage(textBoxPayload.Handle, EM_SETCUEBANNER, 0, selected?.PayloadPlaceholder ?? "");
             syncButtonStatuses();
         }
     }
