@@ -88,7 +88,7 @@ namespace HomeAssistantShortcuts
             GC.SuppressFinalize(this);
         }
 
-        private async Task<T> api<T>(HttpMethod method, string path, object? body = null)
+        private async Task<T?> api<T>(HttpMethod method, string path, object? body = null) 
         {
             if (client is null)
             {
@@ -131,7 +131,7 @@ namespace HomeAssistantShortcuts
         public async Task<string?> Ping()
         {
             var response = await api<PingResponse>(HttpMethod.Get, "");
-            return response.message;
+            return response?.message;
         }
 
         public async Task<List<Service>> ListServices()
@@ -145,7 +145,7 @@ namespace HomeAssistantShortcuts
             ).ToList();
         }
 
-        public async Task<List<object>> CallService(string path, string payload = "")
+        public async Task<List<object>?> CallService(string path, string payload = "")
         {
             return await api<List<object>>(HttpMethod.Post, $"services/{path}", payload);
         }
