@@ -102,6 +102,8 @@ namespace HomeAssistantShortcuts
                 {
                     await JsonSerializer.SerializeAsync(bodyStream, body);
                 }
+                await bodyStream.FlushAsync();
+                bodyStream.Seek(0, SeekOrigin.Begin);
                 message.Content = new StreamContent(bodyStream);
                 message.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
