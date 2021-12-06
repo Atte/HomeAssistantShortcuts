@@ -14,20 +14,20 @@ namespace HomeAssistantShortcuts
 
         public MainForm()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 #if DEBUG
             // flip tray icon
-            using var bitmap = notifyIcon.Icon.ToBitmap();
+            using var bitmap = this.notifyIcon.Icon.ToBitmap();
             bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
-            notifyIcon.Icon = System.Drawing.Icon.FromHandle(bitmap.GetHicon());
+            this.notifyIcon.Icon = System.Drawing.Icon.FromHandle(bitmap.GetHicon());
 
             var debugSuffix = " (DEBUG)";
-            Text += debugSuffix;
-            toolStripMenuItemTitle.Text += debugSuffix;
-            notifyIcon.Text += debugSuffix;
-            notifyIcon.Visible = false;
+            this.Text += debugSuffix;
+            this.toolStripMenuItemTitle.Text += debugSuffix;
+            this.notifyIcon.Text += debugSuffix;
+            this.notifyIcon.Visible = false;
 #endif
-            applySettings();
+            this.applySettings();
         }
 
         // hide window by default in release builds
@@ -35,7 +35,7 @@ namespace HomeAssistantShortcuts
         {
 #if DEBUG
             // prevent warnings about unused variable
-            _ = initialShow;
+            _ = this.initialShow;
 #else
             if (initialShow)
             {
@@ -49,23 +49,23 @@ namespace HomeAssistantShortcuts
         private async void applySettings()
         {
             // server status
-            connection.BaseUrl = Properties.Settings.Default.ApiBaseUrl;
-            connection.Token = Properties.Settings.Default.ApiAccessToken;
+            this.connection.BaseUrl = Properties.Settings.Default.ApiBaseUrl;
+            this.connection.Token = Properties.Settings.Default.ApiAccessToken;
             try
             {
-                textBoxServerStatus.Text = await connection.Ping();
+                this.textBoxServerStatus.Text = await this.connection.Ping();
             }
             catch (Exception err)
             {
-                textBoxServerStatus.Text = err.Message;
+                this.textBoxServerStatus.Text = err.Message;
             }
 
             // clear old hotkeys
-            deregisterHotkeys();
+            this.deregisterHotkeys();
 
             // add shortcuts to list and register handlers
-            listShortcuts.BeginUpdate();
-            listShortcuts.Items.Clear();
+            this.listShortcuts.BeginUpdate();
+            this.listShortcuts.Items.Clear();
             foreach (var shortcut in Properties.Settings.Default.Shortcuts)
             {
                 // add to list
@@ -73,7 +73,7 @@ namespace HomeAssistantShortcuts
                 item.SubItems.Add(shortcut.Path);
                 item.SubItems.Add(shortcut.Payload);
                 item.Tag = shortcut;
-                listShortcuts.Items.Add(item);
+                this.listShortcuts.Items.Add(item);
 
                 // register handler
                 var hotkey = shortcut.ToHotkey();
@@ -83,52 +83,52 @@ namespace HomeAssistantShortcuts
                     {
                         try
                         {
-                            await connection.CallService(shortcut.Path!, shortcut.Payload);
+                            await this.connection.CallService(shortcut.Path!, shortcut.Payload);
                         }
                         catch (Exception err)
                         {
-                            textBoxServerStatus.Text = err.Message;
+                            this.textBoxServerStatus.Text = err.Message;
                         }
                     };
                     hotkey.Register(this);
-                    hotkeys.Add(hotkey);
+                    this.hotkeys.Add(hotkey);
                 }
             }
-            listShortcuts.EndUpdate();
+            this.listShortcuts.EndUpdate();
         }
 
         private void deregisterHotkeys()
         {
-            foreach (var hotkey in hotkeys)
+            foreach (var hotkey in this.hotkeys)
             {
                 if (hotkey.Registered)
                 {
                     hotkey.Unregister();
                 }
             }
-            hotkeys.Clear();
+            this.hotkeys.Clear();
         }
 
         private void buttonSaveServerConnection_Click(object sender, EventArgs e)
         {
             Properties.Settings.Default.Save();
-            applySettings();
+            this.applySettings();
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            if (WindowState == FormWindowState.Minimized)
+            if (this.WindowState == FormWindowState.Minimized)
             {
-                Hide();
-                notifyIcon.Visible = true;
+                this.Hide();
+                this.notifyIcon.Visible = true;
             }
         }
 
         private void buttonAddShortcut_Click(object sender, EventArgs e)
         {
-            var dialog = new AddDialogForm(connection);
-            dialog.Shown += delegate { deregisterHotkeys(); };
-            dialog.FormClosed += delegate { applySettings(); };
+            var dialog = new AddDialogForm(this.connection);
+            dialog.Shown += delegate { this.deregisterHotkeys(); };
+            dialog.FormClosed += delegate { this.applySettings(); };
             dialog.ShowDialog();
         }
 
@@ -136,45 +136,45 @@ namespace HomeAssistantShortcuts
         {
 
             Properties.Settings.Default.Shortcuts.RemoveAll(
-                shortcut => listShortcuts.SelectedItems.Cast<ListViewItem>().Any(item => item.Tag == shortcut)
+                shortcut => this.listShortcuts.SelectedItems.Cast<ListViewItem>().Any(item => item.Tag == shortcut)
             );
-            listShortcuts.SelectedItems.Clear();
+            this.listShortcuts.SelectedItems.Clear();
             Properties.Settings.Default.Save();
-            applySettings();
+            this.applySettings();
         }
 
         private void listShortcuts_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            buttonDeleteShortcuts.Enabled = listShortcuts.SelectedItems.Count > 0;
+            this.buttonDeleteShortcuts.Enabled = this.listShortcuts.SelectedItems.Count > 0;
         }
 
         private void restoreFromTray()
         {
-            initialShow = false;
-            BringToFront();
-            Show();
-            WindowState = FormWindowState.Normal;
-            notifyIcon.Visible = false;
+            this.initialShow = false;
+            this.BringToFront();
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            this.notifyIcon.Visible = false;
         }
 
         private void notifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            restoreFromTray();
+            this.restoreFromTray();
         }
 
         private void toolStripMenuItemOpen_Click(object sender, EventArgs e)
         {
-            restoreFromTray();
+            this.restoreFromTray();
         }
 
         private void toolStripMenuItemQuit_Click(object sender, EventArgs e)
         {
-            Close();
+            this.Close();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            deregisterHotkeys();
+            this.deregisterHotkeys();
         }
     }
 }

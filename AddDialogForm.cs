@@ -12,45 +12,45 @@ namespace HomeAssistantShortcuts
 
         public AddDialogForm(ServerConnection connection, Shortcut? shortcut = null)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.connection = connection;
             this.shortcut = shortcut ?? new Shortcut();
-            syncButtonStatuses();
+            this.syncButtonStatuses();
         }
 
         public async Task LoadServices()
         {
-            var services = await connection.ListServices();
-            comboBoxPaths.Items.AddRange(services.ToArray());
-            comboBoxPaths.Enabled = true;
+            var services = await this.connection.ListServices();
+            this.comboBoxPaths.Items.AddRange(services.ToArray());
+            this.comboBoxPaths.Enabled = true;
 
-            if (shortcut.Path != "")
+            if (this.shortcut.Path != "")
             {
-                comboBoxPaths.SelectedValue = shortcut.Path;
+                this.comboBoxPaths.SelectedValue = this.shortcut.Path;
             }
-            syncButtonStatuses();
+            this.syncButtonStatuses();
         }
 
         private void syncButtonStatuses()
         {
-            buttonAdd.Enabled = shortcut.KeyCode > 0 && !string.IsNullOrEmpty(shortcut.Path);
+            this.buttonAdd.Enabled = this.shortcut.KeyCode > 0 && !string.IsNullOrEmpty(this.shortcut.Path);
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Shortcuts.Add(shortcut);
+            Properties.Settings.Default.Shortcuts.Add(this.shortcut);
             Properties.Settings.Default.Save();
-            Close();
+            this.Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            Close();
+            this.Close();
         }
 
         private void AddDialogForm_Shown(object sender, EventArgs e)
         {
-            _ = LoadServices();
+            _ = this.LoadServices();
         }
 
         private void textBoxShortcut_KeyDown(object sender, KeyEventArgs e)
@@ -58,36 +58,36 @@ namespace HomeAssistantShortcuts
             e.Handled = true;
             e.SuppressKeyPress = true;
 
-            shortcut.SetFromEvent(e);
-            renderShortcut();
-            syncButtonStatuses();
+            this.shortcut.SetFromEvent(e);
+            this.renderShortcut();
+            this.syncButtonStatuses();
         }
 
         private void renderShortcut()
         {
-            var label = shortcut?.KeyLabel;
+            var label = this.shortcut?.KeyLabel;
             if (string.IsNullOrEmpty(label))
             {
-                textBoxShortcut.Text = "<not set>";
+                this.textBoxShortcut.Text = "<not set>";
             }
             else
             {
-                textBoxShortcut.Text = label;
+                this.textBoxShortcut.Text = label;
             }
         }
 
         private void textBoxPayload_TextChanged(object sender, EventArgs e)
         {
-            shortcut.Payload = textBoxPayload.Text;
-            syncButtonStatuses();
+            this.shortcut.Payload = this.textBoxPayload.Text;
+            this.syncButtonStatuses();
         }
 
         private void comboBoxPaths_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selected = (Service)comboBoxPaths.SelectedItem;
-            shortcut.Path = selected?.Path;
-            textBoxPayload.PlaceholderText = selected?.PayloadPlaceholder;
-            syncButtonStatuses();
+            var selected = (Service)this.comboBoxPaths.SelectedItem;
+            this.shortcut.Path = selected?.Path;
+            this.textBoxPayload.PlaceholderText = selected?.PayloadPlaceholder;
+            this.syncButtonStatuses();
         }
     }
 }

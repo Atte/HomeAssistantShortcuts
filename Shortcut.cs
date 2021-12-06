@@ -20,20 +20,20 @@ namespace HomeAssistantShortcuts
             get
             {
                 var parts = new List<string>();
-                if (Control)
+                if (this.Control)
                 {
                     parts.Add("Ctrl");
                 }
-                if (Alt)
+                if (this.Alt)
                 {
                     parts.Add("Alt");
                 }
-                if (Shift)
+                if (this.Shift)
                 {
                     parts.Add("Shift");
                 }
 
-                parts.Add(KeyCode switch
+                parts.Add(this.KeyCode switch
                 {
                     null => "...",
                     Keys code when code >= Keys.D0 && code <= Keys.D9 => code.ToString()[1..],
@@ -48,16 +48,19 @@ namespace HomeAssistantShortcuts
 
         public void SetFromEvent(KeyEventArgs keyEvent)
         {
-            Control = keyEvent.Control;
-            Alt = keyEvent.Alt;
-            Shift = keyEvent.Shift;
-            KeyCode = keyEvent.KeyCode switch
+            this.Control = keyEvent.Control;
+            this.Alt = keyEvent.Alt;
+            this.Shift = keyEvent.Shift;
+            this.KeyCode = keyEvent.KeyCode switch
             {
                 Keys.ControlKey or Keys.LControlKey or Keys.RControlKey or Keys.Alt or Keys.Menu or Keys.LMenu or Keys.RMenu or Keys.ShiftKey or Keys.LShiftKey or Keys.RShiftKey => null,
                 Keys code => code,
             };
         }
 
-        public Hotkey? ToHotkey() => KeyCode is null ? null : new Hotkey(KeyCode.Value, Shift, Control, Alt, false);
+        public Hotkey? ToHotkey()
+        {
+            return this.KeyCode is null ? null : new Hotkey(this.KeyCode.Value, this.Shift, this.Control, this.Alt, false);
+        }
     }
 }

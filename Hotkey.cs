@@ -113,11 +113,11 @@ namespace HomeAssistantShortcuts
             Hotkey.currentID = (Hotkey.currentID + 1) % Hotkey.maximumID;
 
             // Translate modifier keys into unmanaged version
-            uint modifiers = (this.Alt ? Hotkey.MOD_ALT : 0) | (this.Control ? Hotkey.MOD_CONTROL : 0) |
+            var modifiers = (this.Alt ? Hotkey.MOD_ALT : 0) | (this.Control ? Hotkey.MOD_CONTROL : 0) |
                             (this.Shift ? Hotkey.MOD_SHIFT : 0) | (this.Windows ? Hotkey.MOD_WIN : 0);
 
             // Register the hotkey
-            if (Hotkey.RegisterHotKey(windowControl.Handle, this.id, modifiers, keyCode) == 0)
+            if (Hotkey.RegisterHotKey(windowControl.Handle, this.id, modifiers, this.keyCode) == 0)
             {
                 // Is the error that the hotkey is registered?
                 if (Marshal.GetLastWin32Error() == ERROR_HOTKEY_ALREADY_REGISTERED)
@@ -160,7 +160,7 @@ namespace HomeAssistantShortcuts
             { return; }
 
             // Save control reference
-            Control windowControl = this.windowControl;
+            var windowControl = this.windowControl;
 
             // Unregister and then reregister again
             this.Unregister();
@@ -186,7 +186,7 @@ namespace HomeAssistantShortcuts
         private bool OnPressed()
         {
             // Fire the event if we can
-            HandledEventArgs handledEventArgs = new HandledEventArgs(false);
+            var handledEventArgs = new HandledEventArgs(false);
             this.Pressed?.Invoke(this, handledEventArgs);
             // Return whether we handled the event or not
             return handledEventArgs.Handled;
@@ -199,7 +199,7 @@ namespace HomeAssistantShortcuts
             { return "(none)"; }
 
             // Build key name
-            string keyName = Enum.GetName(typeof(Keys), this.keyCode); ;
+            var keyName = Enum.GetName(typeof(Keys), this.keyCode); ;
             switch (this.keyCode)
             {
                 case Keys.D0:
@@ -221,7 +221,7 @@ namespace HomeAssistantShortcuts
             }
 
             // Build modifiers
-            string modifiers = "";
+            var modifiers = "";
             if (this.shift)
             { modifiers += "Shift+"; }
             if (this.control)
@@ -235,19 +235,13 @@ namespace HomeAssistantShortcuts
             return modifiers + keyName;
         }
 
-        public bool Empty
-        {
-            get { return this.keyCode == Keys.None; }
-        }
+        public bool Empty => this.keyCode == Keys.None;
 
-        public bool Registered
-        {
-            get { return this.registered; }
-        }
+        public bool Registered => this.registered;
 
         public Keys KeyCode
         {
-            get { return this.keyCode; }
+            get => this.keyCode;
             set
             {
                 // Save and reregister
@@ -258,7 +252,7 @@ namespace HomeAssistantShortcuts
 
         public bool Shift
         {
-            get { return this.shift; }
+            get => this.shift;
             set
             {
                 // Save and reregister
@@ -269,7 +263,7 @@ namespace HomeAssistantShortcuts
 
         public bool Control
         {
-            get { return this.control; }
+            get => this.control;
             set
             {
                 // Save and reregister
@@ -280,7 +274,7 @@ namespace HomeAssistantShortcuts
 
         public bool Alt
         {
-            get { return this.alt; }
+            get => this.alt;
             set
             {
                 // Save and reregister
@@ -291,7 +285,7 @@ namespace HomeAssistantShortcuts
 
         public bool Windows
         {
-            get { return this.windows; }
+            get => this.windows;
             set
             {
                 // Save and reregister

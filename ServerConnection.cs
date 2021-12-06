@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -43,15 +42,17 @@ namespace HomeAssistantShortcuts
 
         internal Service(string path, ServiceResponseItemService service)
         {
-            Path = path;
-            Description = service.description;
+            this.Path = path;
+            this.Description = service.description;
 
             if (service.fields?.Count > 0)
             {
-                var options = new JsonSerializerOptions();
-                options.WriteIndented = true;
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
 
-                PayloadPlaceholder = JsonSerializer.Serialize(
+                this.PayloadPlaceholder = JsonSerializer.Serialize(
                     service.fields.ToDictionary(field => field.Key, field => field.Value.example ?? new JsonElement()),
                     options
                 );
@@ -73,40 +74,40 @@ namespace HomeAssistantShortcuts
                 }
 
                 var handler = new HttpClientHandler();
-//#if DEBUG
-//                handler.Proxy = new WebProxy("127.0.0.1:5555", false);
-//#endif
-                 
-                client = new HttpClient(handler)
+                //#if DEBUG
+                //                handler.Proxy = new WebProxy("127.0.0.1:5555", false);
+                //#endif
+
+                this.client = new HttpClient(handler)
                 {
                     BaseAddress = new Uri(value),
                     Timeout = TimeSpan.FromSeconds(5)
                 };
             }
         }
-        
+
         public string? Token { set; private get; }
 
         public void Dispose()
         {
-            client?.Dispose();
-            client = null;
+            this.client?.Dispose();
+            this.client = null;
             GC.SuppressFinalize(this);
         }
 
         private async Task<T?> api<T>(HttpMethod method, string path, object? body = null)
         {
-            if (client is null)
+            if (this.client is null)
             {
-                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(BaseUrl)} has been set");
+                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(this.BaseUrl)} has been set");
             }
-            if (Token is null)
+            if (this.Token is null)
             {
-                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(Token)} has been set");
+                throw new Exception($"{nameof(ServerConnection)}.{nameof(ServerConnection.api)} called before {nameof(this.Token)} has been set");
             }
 
             using var message = new HttpRequestMessage(method, path);
-            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.Token);
             message.Headers.Add("Accept", "application/json");
 
             using var bodyStream = new MemoryStream();
@@ -127,7 +128,7 @@ namespace HomeAssistantShortcuts
                 message.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
 
-            using var response = await client.SendAsync(message);
+            using var response = await this.client.SendAsync(message);
             response.EnsureSuccessStatusCode();
 
             using var stream = await response.Content.ReadAsStreamAsync();
@@ -136,13 +137,13 @@ namespace HomeAssistantShortcuts
 
         public async Task<string?> Ping()
         {
-            var response = await api<PingResponse>(HttpMethod.Get, "");
+            var response = await this.api<PingResponse>(HttpMethod.Get, "");
             return response?.message;
         }
 
         public async Task<List<Service>> ListServices()
         {
-            var response = await api<List<ServiceResponseItem>>(HttpMethod.Get, "services");
+            var response = await this.api<List<ServiceResponseItem>>(HttpMethod.Get, "services");
             return (
                 from item in response
                 where item.services is not null
@@ -154,7 +155,7 @@ namespace HomeAssistantShortcuts
 
         public async Task<List<object>?> CallService(string path, string payload = "")
         {
-            return await api<List<object>>(HttpMethod.Post, $"services/{path}", payload);
+            return await this.api<List<object>>(HttpMethod.Post, $"services/{path}", payload);
         }
     }
 }
