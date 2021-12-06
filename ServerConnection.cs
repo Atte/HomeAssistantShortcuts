@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -71,14 +72,19 @@ namespace HomeAssistantShortcuts
                     value.Append('/');
                 }
 
-                client = new HttpClient
+                var handler = new HttpClientHandler();
+//#if DEBUG
+//                handler.Proxy = new WebProxy("127.0.0.1:5555", false);
+//#endif
+                 
+                client = new HttpClient(handler)
                 {
                     BaseAddress = new Uri(value),
-                    Timeout = TimeSpan.FromSeconds(10)
+                    Timeout = TimeSpan.FromSeconds(5)
                 };
             }
         }
-
+        
         public string? Token { set; private get; }
 
         public void Dispose()
@@ -88,7 +94,7 @@ namespace HomeAssistantShortcuts
             GC.SuppressFinalize(this);
         }
 
-        private async Task<T?> api<T>(HttpMethod method, string path, object? body = null) 
+        private async Task<T?> api<T>(HttpMethod method, string path, object? body = null)
         {
             if (client is null)
             {
@@ -139,7 +145,8 @@ namespace HomeAssistantShortcuts
             var response = await api<List<ServiceResponseItem>>(HttpMethod.Get, "services");
             return (
                 from item in response
-                from service in item.services
+                where item.services is not null
+                from service in item.services!
                 orderby item.domain, service.Key
                 select new Service($"{item.domain}/{service.Key}", service.Value)
             ).ToList();

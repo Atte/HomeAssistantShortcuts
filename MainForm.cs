@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Windows.Forms;
 
 namespace HomeAssistantShortcuts
@@ -57,7 +55,7 @@ namespace HomeAssistantShortcuts
             {
                 textBoxServerStatus.Text = await connection.Ping();
             }
-            catch (Exception err) when (err is HttpRequestException || err is JsonException)
+            catch (Exception err)
             {
                 textBoxServerStatus.Text = err.Message;
             }
@@ -81,7 +79,17 @@ namespace HomeAssistantShortcuts
                 var hotkey = shortcut.ToHotkey();
                 if (!(hotkey is null) && !string.IsNullOrEmpty(shortcut.Path))
                 {
-                    hotkey.Pressed += async delegate { await connection.CallService(shortcut.Path!, shortcut.Payload); };
+                    hotkey.Pressed += async delegate
+                    {
+                        try
+                        {
+                            await connection.CallService(shortcut.Path!, shortcut.Payload);
+                        }
+                        catch (Exception err)
+                        {
+                            textBoxServerStatus.Text = err.Message;
+                        }
+                    };
                     hotkey.Register(this);
                     hotkeys.Add(hotkey);
                 }

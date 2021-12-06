@@ -8,8 +8,8 @@
     <Setting Name="ApiAccessToken" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Shortcuts" Type="System.String" Scope="User">
-      <Value Profile="(Default)">[]</Value>
+    <Setting Name="Shortcuts" Type="System.Collections.Generic.List&lt;HomeAssistantShortcuts.Shortcut&gt;" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

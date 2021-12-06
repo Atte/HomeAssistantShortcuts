@@ -11,7 +11,7 @@ namespace HomeAssistantShortcuts
         public bool Control = false;
         public bool Alt = false;
         public bool Shift = false;
-        public Keys? KeyCode = 0;
+        public Keys? KeyCode = Keys.None;
         public string? Path = null;
         public string Payload = "";
 
@@ -32,18 +32,14 @@ namespace HomeAssistantShortcuts
                 {
                     parts.Add("Shift");
                 }
-                if (KeyCode is null)
+
+                parts.Add(KeyCode switch
                 {
-                    parts.Add("...");
-                }
-                else if (KeyCode >= Keys.D0 && KeyCode <= Keys.D9)
-                {
-                    parts.Add(KeyCode.ToString().Substring(1));
-                }
-                else
-                {
-                    parts.Add(KeyCode.ToString());
-                }
+                    null => "...",
+                    Keys code when code >= Keys.D0 && code <= Keys.D9 => code.ToString()[1..],
+                    Keys code => code.ToString(),
+                });
+
                 return string.Join(" + ", parts);
             }
         }
@@ -55,24 +51,11 @@ namespace HomeAssistantShortcuts
             Control = keyEvent.Control;
             Alt = keyEvent.Alt;
             Shift = keyEvent.Shift;
-            switch (keyEvent.KeyCode)
+            KeyCode = keyEvent.KeyCode switch
             {
-                case Keys.ControlKey:
-                case Keys.LControlKey:
-                case Keys.RControlKey:
-                case Keys.Alt:
-                case Keys.Menu:
-                case Keys.LMenu:
-                case Keys.RMenu:
-                case Keys.ShiftKey:
-                case Keys.LShiftKey:
-                case Keys.RShiftKey:
-                    KeyCode = null;
-                    break;
-                default:
-                    KeyCode = keyEvent.KeyCode;
-                    break;
-            }
+                Keys.ControlKey or Keys.LControlKey or Keys.RControlKey or Keys.Alt or Keys.Menu or Keys.LMenu or Keys.RMenu or Keys.ShiftKey or Keys.LShiftKey or Keys.RShiftKey => null,
+                Keys code => code,
+            };
         }
 
         public Hotkey? ToHotkey() => KeyCode is null ? null : new Hotkey(KeyCode.Value, Shift, Control, Alt, false);
