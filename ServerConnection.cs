@@ -70,7 +70,7 @@ namespace HomeAssistantShortcuts
             {
                 if (value.Last() != '/')
                 {
-                    value.Append('/');
+                    value += "/";
                 }
 
                 var handler = new HttpClientHandler();
@@ -116,7 +116,7 @@ namespace HomeAssistantShortcuts
                 if (body is string stringBody)
                 {
                     var bytes = Encoding.UTF8.GetBytes(stringBody);
-                    await bodyStream.WriteAsync(bytes, 0, bytes.Length);
+                    await bodyStream.WriteAsync(bytes.AsMemory(0, bytes.Length));
                 }
                 else
                 {

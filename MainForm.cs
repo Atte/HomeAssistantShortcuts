@@ -8,8 +8,8 @@ namespace HomeAssistantShortcuts
 {
     public partial class MainForm : Form
     {
-        private readonly ServerConnection connection = new ServerConnection();
-        private readonly List<Hotkey> hotkeys = new List<Hotkey>();
+        private readonly ServerConnection connection = new();
+        private readonly List<Hotkey> hotkeys = new();
         private bool initialShow = true;
 
         public MainForm()

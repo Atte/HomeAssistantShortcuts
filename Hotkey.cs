@@ -213,7 +213,7 @@ namespace HomeAssistantShortcuts
                 case Keys.D8:
                 case Keys.D9:
                     // Strip the first character
-                    keyName = keyName.Substring(1);
+                    keyName = keyName[1..];
                     break;
                 default:
                     // Leave everything alone
